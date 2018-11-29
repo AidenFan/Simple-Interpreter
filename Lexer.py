@@ -6,25 +6,31 @@ from utils import TokenTab
 class Lexer:
     def __init__(self):
         self.words = ''
-        self.token = Token(Token_Type.ERRTOKEN.name, "", 0.0, None)
+        self.state = 0
+        # token集
+        self.tokens = []
+        self.cnt = 0
 
     def lexer(self, fpath):
+        # 打开文件 按行读取
         file = open(fpath, 'r')
         content = file.read()
         content += '\n'
+        # 大小写不敏感 全部改成大写处理
         content = str.upper(content)
+        # 初始状态为0
         state = 0
         for i in range(len(content)):
             state = self.next_state(state, content[i])
+        self.tokens.append(Token(Token_Type.NONTOKEN.name, "", 0.0, None))
 
     def next_state(self, state, ch):
         if ch == ' ' or ch == '\t' or ch == '\n':
-            self.search(state, self.words).show()
-            self.words = ''
+            self.search(state)
             return 0
-        self.words += ch
-        # print("after join: %s" % self.words)
+
         if state == 0:
+            self.words += ch
             if ch.isalpha():
                 return 1
             elif ch.isdigit():
@@ -39,54 +45,109 @@ class Lexer:
                 return 5
         elif state == 1:
             if ch.isdigit() or ch.isalpha():
+                self.words += ch
                 return 1
+            else:
+                return self.next_state(0, ch)
         elif state == 2:
             if ch.isdigit():
+                self.words += ch
                 return 2
             elif ch == '.':
+                self.words += ch
                 return 3
+            else:
+                self.search(state)
+                return self.next_state(0, ch)
+        elif state == 3:
+            if ch.isdigit():
+                self.words += ch
+                return 3
+            else:
+                self.search(state)
+                return self.next_state(0, ch)
+        elif state == 4:
+            if ch == '*':
+                self.words += '*'
+                return 5
+            else:
+                self.search(state)
+                return self.next_state(0, ch)
+        elif state == 5:
+            self.search(state)
+            return self.next_state(0, ch)
         elif state == 6:
             if ch == '/':
+                self.words += ch
                 return 5
+            else:
+                self.search(state)
+                return self.next_state(0, ch)
         elif state == 7:
             if ch == '-':
+                self.words += ch
                 return 5
+            else:
+                self.search(state)
+                return self.next_state(0, ch)
 
-    def search(self, state, words):
+    def search(self, state):
         if state == 1:
+            found = False
             for item in TokenTab:
-                if words == item.lexeme:
-                    return item
-            print("ID not found!")
+                if self.words == item.lexeme:
+                    self.tokens.append(item)
+                    found = True
+                    break
+            if not found:
+                print("Error with " + self.words + ": ID not found!")
         elif state == 2 or state == 3:
-            return Token(Token_Type.CONST_ID.name, "CONST_ID", words, None)   # 字符串转数字
+            self.tokens.append(Token(Token_Type.CONST_ID.name, "CONST_ID", self.words, None))   # 字符串转数字
         elif state == 4:
-            return Token(Token_Type.MUL.name, words, 0.0, None)
+            self.tokens.append(Token(Token_Type.MUL.name, self.words, 0.0, None))
         elif state == 5:
-            return Token(Token_Type.POWER.name, words, 0.0, None)
+            if self.words == "**":
+                self.tokens.append(Token(Token_Type.POWER.name, self.words, 0.0, None))
+            elif self.words == "//":
+                self.tokens.append(Token(Token_Type.COMMENT.name, self.words, 0.0, None))
+            elif self.words == "--":
+                self.tokens.append(Token(Token_Type.COMMENT.name, self.words, 0.0, None))
+            elif self.words == "+":
+                self.tokens.append(Token(Token_Type.PLUS.name, self.words, 0.0, None))
+            elif self.words == ",":
+                self.tokens.append(Token(Token_Type.COMMA.name, self.words, 0.0, None))
+            elif self.words == ";":
+                self.tokens.append(Token(Token_Type.SEMICO.name, self.words, 0.0, None))
+            elif self.words == "(":
+                self.tokens.append(Token(Token_Type.L_BRACKET.name, self.words, 0.0, None))
+            elif self.words == ")":
+                self.tokens.append(Token(Token_Type.R_BRACKET.name, self.words, 0.0, None))
         elif state == 6:
-            return Token(Token_Type.DIV.name, words, 0.0, None)
+            self.tokens.append(Token(Token_Type.DIV.name, self.words, 0.0, None))
         elif state == 7:
-            return Token(Token_Type.MINUS.name, words, 0.0, None)
+            self.tokens.append(Token(Token_Type.MINUS.name, self.words, 0.0, None))
+        self.words = ""
+
+    def gettoken(self):
+        res = self.tokens[self.cnt]
+        self.cnt = self.cnt + 1
+        return res
 
 
 if __name__ == '__main__':
+    # 初始化词法分析器
     a = Lexer()
+    # 对文件进行词法分析
     a.lexer('test.txt')
-    # while True:
-    #     sentence = input()
-    #     if sentence == 'q':
-    #         break
-    #     sentence = str.upper(sentence)
-    #     for i in range(len(sentence)):
-    #         print(sentence[i])
-    # token = Token(Token_Type.ERRTOKEN.name, "", 0.0, None)
-    # print("记号类别     字符串     常数值     函数指针")
-    # print("----------------------------------------")
-    # while True:
-    #     token = GetToken()
-    #     if(token.type != Token_Type.NONTOKEN.name):
-    #         token.show()
-    #     else:
-    #         break
-    # print("----------------------------------------")
+
+    token = Token(Token_Type.ERRTOKEN.name, "", 0.0, None)
+    print("记号类别   字符串   常数值   函数指针")
+    print("------------------------------------")
+    # 每次返回一个token
+    while True:
+        token = a.gettoken()
+        if(token.type != Token_Type.NONTOKEN.name):
+            token.show()
+        else:
+            break
+    print("------------------------------------")
