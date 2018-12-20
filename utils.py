@@ -1,11 +1,31 @@
 import math
+import copy
 from enum import Enum
+
+Parameter = 0
+
+
+def set_param(x):
+    global Parameter
+    Parameter = x
+
+
+def get_param():
+    global Parameter
+    return Parameter
+
+
+def change_param(x):
+    global Parameter
+    Parameter += x
+
+
 
 Token_Type = Enum('Token_Type', ('ORIGIN', 'SCALE', 'ROT', 'IS', 'TO', 'STEP',
                                 'DRAW', 'FOR', 'FROM', 'T', 'SEMICO', 'L_BRACKET',
                                 'R_BRACKET', 'COMMA', 'PLUS', 'MINUS', 'MUL',
                                 'DIV', 'POWER', 'FUNC', 'CONST_ID', 'NONTOKEN',
-                                'ERRTOKEN'))
+                                'ERRTOKEN', 'COMMENT'))
 
 
 class Token:
@@ -15,19 +35,19 @@ class Token:
     double value
     Func is a function
     '''
-    def __init__(self, _type, _lexeme, _value, _Func):
-        self.type = _type
-        self.lexeme = _lexeme
-        self.value = _value
-        self.Func = _Func
+    def __init__(self, type, lexeme, value, func):
+        self.type = type
+        self.lexeme = lexeme
+        self.value = value
+        self.func = func
 
     def show(self):
-        if self.Func == None:
+        if self.func == None:
             func_name = 'NULL'
         else:
-            func_name = self.Func.__name__
+            func_name = self.func.__name__
 
-        print('< ' + str(self.type) + '\t' + '"' + self.lexeme + '"' + '\t' + str(self.value) + '\t' + func_name + '>')
+        print('<' + str(self.type) + '\t' + '"' + self.lexeme + '"' + '\t' + str(self.value) + '\t' + func_name + '>')
 
     def get_value(self):
         return self.value
@@ -76,3 +96,36 @@ TokenTab.append(Token(Token_Type.FROM.name, 'FROM', 0.0, None))
 TokenTab.append(Token(Token_Type.TO.name, 'TO', 0.0, None))
 TokenTab.append(Token(Token_Type.STEP.name, 'STEP', 0.0, None))
 TokenTab.append(Token(Token_Type.DRAW.name, 'DRAW', 0.0, None))
+
+
+class ExprNode:
+    def __init__(self, type, tmp=0, lnode=None, rnode=None, func=None):
+        self.type = type
+        self.value = 0.0
+        self.func = None
+        self.left = lnode
+        self.right = rnode
+
+        if self.type == Token_Type.CONST_ID.name:
+            self.value = tmp
+        elif self.type == Token_Type.FUNC.name:
+            self.func = func
+
+    def show(self):
+        print(self.type + " ")
+        if self.type == Token_Type.CONST_ID.name:
+            print(self.value)
+        elif self.type == Token_Type.FUNC.name:
+            print(self.func)
+
+    def get_param(self):
+        return get_param()
+
+
+def syntax_error(case_of, ob=None):
+    if case_of == 1:
+        print("ERRORTOKEN")
+    elif case_of == 2:
+        print("Match Token Error with " + ob)
+    elif case_of == 3:
+        print("Statement Error")

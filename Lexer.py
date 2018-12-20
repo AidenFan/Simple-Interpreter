@@ -4,21 +4,23 @@ from utils import TokenTab
 
 
 class Lexer:
-    def __init__(self):
+    def __init__(self, filename):
         self.words = ''
         self.state = 0
-        # token集
+        # token set
         self.tokens = []
         self.cnt = 0
+        self.file = open(filename, 'r')
+        if self.file is None:
+            print("Open Source File Error!")
 
-    def lexer(self, fpath):
-        # 打开文件 按行读取
-        file = open(fpath, 'r')
-        content = file.read()
+    def start(self):
+        # open the file
+        content = self.file.read()
         content += '\n'
-        # 大小写不敏感 全部改成大写处理
+        # to upper
         content = str.upper(content)
-        # 初始状态为0
+        # init
         state = 0
         for i in range(len(content)):
             state = self.next_state(state, content[i])
@@ -48,6 +50,7 @@ class Lexer:
                 self.words += ch
                 return 1
             else:
+                self.search(state)
                 return self.next_state(0, ch)
         elif state == 2:
             if ch.isdigit():
@@ -92,6 +95,8 @@ class Lexer:
                 return self.next_state(0, ch)
 
     def search(self, state):
+        # print(state)
+        # print(self.words)
         if state == 1:
             found = False
             for item in TokenTab:
@@ -136,9 +141,9 @@ class Lexer:
 
 if __name__ == '__main__':
     # 初始化词法分析器
-    a = Lexer()
+    a = Lexer("test.txt")
     # 对文件进行词法分析
-    a.lexer('test.txt')
+    a.start()
 
     token = Token(Token_Type.ERRTOKEN.name, "", 0.0, None)
     print("记号类别   字符串   常数值   函数指针")
