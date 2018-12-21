@@ -5,30 +5,35 @@ from utils import TokenTab
 
 class Lexer:
     def __init__(self, filename):
-        self.words = ''
-        self.state = 0
-        # token set
-        self.tokens = []
-        self.cnt = 0
+        self.words = ''     # word buffer
+        self.tokens = []    # token set
+        self.cnt = 0        # output counter
+
+        # open the file
         self.file = open(filename, 'r')
         if self.file is None:
-            print("Open Source File Error!")
-        self.comment = False
+            print("Fail to Open Source File")
+        self.comment = False    # flag for comment
 
     def start(self):
-        # open the file
+        # read the file
         content = self.file.read()
+        # close the file
         self.file.close()
+
         content += '\n'
-        # to upper
         content = str.upper(content)
-        # init
+
         state = 0
         for i in range(len(content)):
             if content[i] == '\n':
                 self.comment = False
+
+            # discard the comment
             if not self.comment:
                 state = self.next_state(state, content[i])
+
+        # add the ending token
         self.tokens.append(Token(Token_Type.NONTOKEN.name, "", 0.0, None))
 
     def next_state(self, state, ch):
@@ -100,8 +105,7 @@ class Lexer:
                 return self.next_state(0, ch)
 
     def search(self, state):
-        # print(state)
-        # print(self.words)
+        # search in the table
         if state == 1:
             found = False
             for item in TokenTab:
@@ -138,6 +142,8 @@ class Lexer:
             self.tokens.append(Token(Token_Type.DIV.name, self.words, 0.0, None))
         elif state == 7:
             self.tokens.append(Token(Token_Type.MINUS.name, self.words, 0.0, None))
+
+        # reset the word buffer
         self.words = ""
 
     def gettoken(self):
@@ -147,15 +153,17 @@ class Lexer:
 
 
 if __name__ == '__main__':
-    # 初始化词法分析器
+    # init the lexer
     a = Lexer("test.txt")
-    # 对文件进行词法分析
+    # run the lexer
     a.start()
 
+    # default token
     token = Token(Token_Type.ERRTOKEN.name, "", 0.0, None)
     print("记号类别   字符串   常数值   函数指针")
     print("------------------------------------")
-    # 每次返回一个token
+
+    # lexer return each token every time
     while True:
         token = a.gettoken()
         if token.type != Token_Type.NONTOKEN.name:

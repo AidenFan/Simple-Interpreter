@@ -1,7 +1,7 @@
 import math
-import copy
 from enum import Enum
 
+# global
 Parameter = 0
 
 
@@ -20,7 +20,6 @@ def change_param(x):
     Parameter += x
 
 
-
 Token_Type = Enum('Token_Type', ('ORIGIN', 'SCALE', 'ROT', 'IS', 'TO', 'STEP',
                                 'DRAW', 'FOR', 'FROM', 'T', 'SEMICO', 'L_BRACKET',
                                 'R_BRACKET', 'COMMA', 'PLUS', 'MINUS', 'MUL',
@@ -28,31 +27,7 @@ Token_Type = Enum('Token_Type', ('ORIGIN', 'SCALE', 'ROT', 'IS', 'TO', 'STEP',
                                 'ERRTOKEN', 'COMMENT', 'COLOR', 'SP_COLOR'))
 
 
-class Token:
-    '''
-    Token_Type  type;
-    str lexeme
-    double value
-    Func is a function
-    '''
-    def __init__(self, type, lexeme, value, func):
-        self.type = type
-        self.lexeme = lexeme
-        self.value = value
-        self.func = func
-
-    def show(self):
-        if self.func is None:
-            func_name = 'NULL'
-        else:
-            func_name = self.func.__name__
-
-        print('<' + str(self.type) + '\t' + '"' + self.lexeme + '"' + '\t' + str(self.value) + '\t' + func_name + '>')
-
-    def get_value(self):
-        return self.value
-
-
+# define functions
 def sin(x):
     return math.sin(x)
 
@@ -77,6 +52,25 @@ def sqrt(x):
     return math.sqrt(x)
 
 
+class Token:
+    def __init__(self, type, lexeme, value, func):
+        self.type = type
+        self.lexeme = lexeme
+        self.value = value
+        self.func = func
+
+    def show(self):
+        if self.func is None:
+            func_name = 'NULL'
+        else:
+            func_name = self.func.__name__
+
+        print('<' + str(self.type) + '\t' + '"' + self.lexeme + '"' + '\t' + str(self.value) + '\t' + func_name + '>')
+
+    def get_value(self):
+        return self.value
+
+# build the table
 TokenTab = []
 TokenTab.append(Token(Token_Type.CONST_ID.name, 'PI', 3.1415926, None))
 TokenTab.append(Token(Token_Type.CONST_ID.name, 'E', 2.71828, None))
@@ -128,6 +122,7 @@ class ExprNode:
         return get_param()
 
 
+# print the error info
 def syntax_error(case_of, sb=None, ob=None):
     if case_of == 1:
         print("ERRORTOKEN")

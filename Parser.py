@@ -6,6 +6,7 @@ from utils import set_param, get_param, change_param
 import math
 import matplotlib.pyplot as plt
 
+# global
 Origin_x = 0.0
 Origin_y = 0.0
 Rot_ang = 0.0
@@ -44,6 +45,8 @@ def set_color(x):
     print(Color)
 
 
+# get the value of expression
+# dfs
 def get_expr_value(root):
     if root is None:
         return 0.0
@@ -64,11 +67,12 @@ def get_expr_value(root):
     return 0.0
 
 
+# calculate (x, y) after transformation
 def cal_coord(x_ptr, y_ptr):
     global Origin_x, Origin_y, Scale_x, Scale_y
     x = get_expr_value(x_ptr)
     y = get_expr_value(y_ptr)
-    # scale transformation
+    # scaling
     x *= Scale_x
     y *= Scale_y
     # rotation
@@ -81,12 +85,12 @@ def cal_coord(x_ptr, y_ptr):
     return x, y
 
 
+# draw the pic dot by dot
 def draw_loop(start, end, step, x_ptr, y_ptr):
     global Color
     set_param(start)
     while get_param() <= end:
         x, y = cal_coord(x_ptr, y_ptr)
-        # print(str(x) + ", " + str(y))
         if Color == 'RED':
             plt.plot(x, y, 'r.')
         elif Color == 'GREEN':
@@ -102,6 +106,7 @@ def close_scanner():
     print("Close scanner")
 
 
+# print the syntax tree
 def print_tree(root):
     if root is not None:
         root.show()
@@ -125,12 +130,15 @@ class Parser:
         close_scanner()
         print("-----Exit Start-----")
 
+    # get one token
     def fetch_token(self):
         print("-----Enter FetchToken-----")
         self.token = self.lexer.gettoken()
-        # self.token.show()
         if self.token.type == Token_Type.ERRTOKEN.name:
             syntax_error(1)
+        # skip comment
+        if self.token.type == Token_Type.COMMENT.name:
+            self.fetch_token()
         print("-----Exit FetchToken-----")
 
     def match_token(self, ob):
@@ -397,8 +405,11 @@ class Parser:
 
 
 if __name__ == '__main__':
+    # init the parser
     p = Parser("test.txt")
+    # run the parser
     p.start()
+
     plt.xlim(0)
     plt.ylim(0)
     plt.show()
