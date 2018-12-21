@@ -11,6 +11,7 @@ Origin_y = 0.0
 Rot_ang = 0.0
 Scale_x = 1
 Scale_y = 1
+Color = 'BLACK'
 
 
 def set_origin(x, y):
@@ -36,10 +37,16 @@ def set_rot(x):
     print(str(Rot_ang))
 
 
+def set_color(x):
+    global Color
+    Color = x
+    print("^^^^^^^^^^^Set Color^^^^^^^^^^^^")
+    print(Color)
+
+
 def get_expr_value(root):
     if root is None:
         return 0.0
-
     if root.type == Token_Type.PLUS.name:
         return float(get_expr_value(root.left)) + float(get_expr_value(root.right))
     elif root.type == Token_Type.MINUS.name:
@@ -54,7 +61,6 @@ def get_expr_value(root):
         return float(root.value)
     elif root.type == Token_Type.T.name:
         return float(root.get_param())
-
     return 0.0
 
 
@@ -76,11 +82,19 @@ def cal_coord(x_ptr, y_ptr):
 
 
 def draw_loop(start, end, step, x_ptr, y_ptr):
+    global Color
     set_param(start)
     while get_param() <= end:
         x, y = cal_coord(x_ptr, y_ptr)
         # print(str(x) + ", " + str(y))
-        plt.scatter(x, y)
+        if Color == 'RED':
+            plt.plot(x, y, 'r.')
+        elif Color == 'GREEN':
+            plt.plot(x, y, 'g.')
+        elif Color == 'BLUE':
+            plt.plot(x, y, 'b.')
+        else:
+            plt.plot(x, y, 'k.')
         change_param(step)
 
 
@@ -122,7 +136,7 @@ class Parser:
     def match_token(self, ob):
         print("-----Enter MatchToken-----")
         if self.token.type != ob:
-            syntax_error(2, ob=ob)
+            syntax_error(2, sb=self.token.type, ob=ob)
             print("-----Exit MatchToken-----")
             return False
         print("*****MatchToken " + ob + "*****")
@@ -148,6 +162,8 @@ class Parser:
             self.rot_statement()
         elif self.token.type == Token_Type.FOR.name:
             self.for_statement()
+        elif self.token.type == Token_Type.COLOR.name:
+            self.color_statement()
         else:
             syntax_error(3)
         print("-----Exit Statement-----")
@@ -226,10 +242,11 @@ class Parser:
         print("--------------------------------------------------")
 
         x = get_expr_value(tmp_ptr)
-        set_rot(x)
 
-        self.fetch_token()
-        print("-----Enter RotStatement-----")
+        # self.fetch_token()
+
+        set_rot(x)
+        print("-----Exit RotStatement-----")
 
     def for_statement(self):
         print("-----Enter ForStatement-----")
@@ -284,6 +301,19 @@ class Parser:
         draw_loop(start, end, step, x_ptr, y_ptr)
 
         print("-----Exit ForStatement-----")
+
+    def color_statement(self):
+        print("-----Enter ColorStatement-----")
+        self.match_token(Token_Type.COLOR.name)
+        self.fetch_token()
+        self.match_token(Token_Type.IS.name)
+        self.fetch_token()
+        self.match_token(Token_Type.SP_COLOR.name)
+
+        set_color(self.token.lexeme)
+
+        self.fetch_token()
+        print("-----Exit ColorStatement-----")
 
     def expression(self):
         print("-----Enter Expression-----")

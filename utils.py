@@ -25,7 +25,7 @@ Token_Type = Enum('Token_Type', ('ORIGIN', 'SCALE', 'ROT', 'IS', 'TO', 'STEP',
                                 'DRAW', 'FOR', 'FROM', 'T', 'SEMICO', 'L_BRACKET',
                                 'R_BRACKET', 'COMMA', 'PLUS', 'MINUS', 'MUL',
                                 'DIV', 'POWER', 'FUNC', 'CONST_ID', 'NONTOKEN',
-                                'ERRTOKEN', 'COMMENT'))
+                                'ERRTOKEN', 'COMMENT', 'COLOR', 'SP_COLOR'))
 
 
 class Token:
@@ -42,7 +42,7 @@ class Token:
         self.func = func
 
     def show(self):
-        if self.func == None:
+        if self.func is None:
             func_name = 'NULL'
         else:
             func_name = self.func.__name__
@@ -96,6 +96,12 @@ TokenTab.append(Token(Token_Type.FROM.name, 'FROM', 0.0, None))
 TokenTab.append(Token(Token_Type.TO.name, 'TO', 0.0, None))
 TokenTab.append(Token(Token_Type.STEP.name, 'STEP', 0.0, None))
 TokenTab.append(Token(Token_Type.DRAW.name, 'DRAW', 0.0, None))
+# color
+TokenTab.append(Token(Token_Type.COLOR.name, 'COLOR', 0.0, None))
+TokenTab.append(Token(Token_Type.SP_COLOR.name, 'BLACK', 0.0, None))
+TokenTab.append(Token(Token_Type.SP_COLOR.name, 'RED', 0.0, None))
+TokenTab.append(Token(Token_Type.SP_COLOR.name, 'GREEN', 0.0, None))
+TokenTab.append(Token(Token_Type.SP_COLOR.name, 'BLUE', 0.0, None))
 
 
 class ExprNode:
@@ -122,10 +128,10 @@ class ExprNode:
         return get_param()
 
 
-def syntax_error(case_of, ob=None):
+def syntax_error(case_of, sb=None, ob=None):
     if case_of == 1:
         print("ERRORTOKEN")
     elif case_of == 2:
-        print("Match Token Error with " + ob)
+        print(sb + " doesn't match " + ob)
     elif case_of == 3:
         print("Statement Error")

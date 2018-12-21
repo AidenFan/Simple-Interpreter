@@ -13,17 +13,22 @@ class Lexer:
         self.file = open(filename, 'r')
         if self.file is None:
             print("Open Source File Error!")
+        self.comment = False
 
     def start(self):
         # open the file
         content = self.file.read()
+        self.file.close()
         content += '\n'
         # to upper
         content = str.upper(content)
         # init
         state = 0
         for i in range(len(content)):
-            state = self.next_state(state, content[i])
+            if content[i] == '\n':
+                self.comment = False
+            if not self.comment:
+                state = self.next_state(state, content[i])
         self.tokens.append(Token(Token_Type.NONTOKEN.name, "", 0.0, None))
 
     def next_state(self, state, ch):
@@ -115,8 +120,10 @@ class Lexer:
                 self.tokens.append(Token(Token_Type.POWER.name, self.words, 0.0, None))
             elif self.words == "//":
                 self.tokens.append(Token(Token_Type.COMMENT.name, self.words, 0.0, None))
+                self.comment = True
             elif self.words == "--":
                 self.tokens.append(Token(Token_Type.COMMENT.name, self.words, 0.0, None))
+                self.comment = True
             elif self.words == "+":
                 self.tokens.append(Token(Token_Type.PLUS.name, self.words, 0.0, None))
             elif self.words == ",":
@@ -151,7 +158,7 @@ if __name__ == '__main__':
     # 每次返回一个token
     while True:
         token = a.gettoken()
-        if(token.type != Token_Type.NONTOKEN.name):
+        if token.type != Token_Type.NONTOKEN.name:
             token.show()
         else:
             break
