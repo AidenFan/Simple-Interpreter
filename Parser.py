@@ -406,7 +406,7 @@ class Parser:
 
 if __name__ == '__main__':
     # init the parser
-    p = Parser("test2.txt")
+    p = Parser("test.txt")
     # run the parser
     p.start()
 
